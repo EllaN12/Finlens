@@ -1,0 +1,27 @@
+.venv/
+airflow-venv/
+node_modules/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+pytest-cache-files-*/
+.coverage
+htmlcov/
+keys/
+*.json
+!package.json
+!package-lock.json
+finlens_dbt/dbt_packages/
+finlens_dbt/target/
+finlens_dbt/logs/
+.streamlit/secrets.toml
+.DS_Store
+
+# Large local data cache — not source-controlled, regenerate via ingest/ingest_latest.py
+data/
+
+# Airflow runtime/log state (DAG source code in dags/ is tracked)
+airflow/logs/
+airflow/airflow.db
+airflow/airflow-webserver.pid

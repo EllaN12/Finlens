@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: hmda
+    project: "{{ env_var('GCP_PROJECT') }}"
+    dataset: raw_hmda
+    tables:
+      - name: hmda_lar_raw
+        columns:
+          - name: activity_year
+            tests: [not_null]
+          - name: state_code
+            tests: [not_null]
+          - name: action_taken
+            tests:
+              - not_null
+              - accepted_values:
+                  values: [1, 2, 3, 4, 5, 6, 7, 8]
+
+  - name: fred
+    project: "{{ env_var('GCP_PROJECT') }}"
+    dataset: raw_fred
+    tables:
+      - name: fred_macro_raw
+        columns:
+          - name: state_code
+            tests: [not_null]
+          - name: metric_name
+            tests:
+              - accepted_values:
+                  values: ['unemployment_rate', 'hpi', 'mortgage_rate_30yr']
+                  

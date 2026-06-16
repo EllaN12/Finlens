@@ -1,0 +1,31 @@
+name: finlens_dbt
+version: "1.0.0"
+config-version: 2
+
+profile: finlens
+
+model-paths: ["models"]
+seed-paths:  ["seeds"]
+test-paths:  ["tests"]
+macro-paths: ["macros"]
+analysis-paths: ["analyses"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  start_year: 2018
+  end_year:   2024
+  treatment_state: "CA"
+
+models:
+  finlens_dbt:
+    staging:
+      +materialized: view
+      +dataset: staging
+    intermediate:
+      +materialized: view
+      +dataset: intermediate
+    marts:
+      +materialized: table
+      +dataset: marts

@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore — keep images lean and secrets out of the build context
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Secrets — NEVER bake into image
+.env
+*.json
+service-account*.json
+credentials*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# dbt artifacts (rebuilt at runtime)
+finlens_dbt/target/
+finlens_dbt/logs/
+finlens_dbt/dbt_packages/
+
+# Local data files (loaded to BQ via ingest, not needed in image)
+data/
+outputs/
+results/
+
+# Dev tooling
+.git/
+.github/
+.pytest_cache/
+pytest-cache-files*/
+tests/
+airflow/
+airflow-venv/
+dags/
+analysis/
+docs/
+*.md
+*.docx
+
+# Node (PPTX builder)
+node_modules/
+outputs/

@@ -1,0 +1,2 @@
+Triple DiD (Investor × CA × Post-CCPA): +0.0039 (p=0.8869)
+95% CI: [-0.0498, 0.0576]

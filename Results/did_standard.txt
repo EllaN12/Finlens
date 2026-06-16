@@ -1,0 +1,5 @@
+
+Standard DiD — approval_rate
+  ATT:    +0.0345 (+3.45 pp)
+  95% CI: [-0.0375, 0.1065]
+  p-val:  0.3472

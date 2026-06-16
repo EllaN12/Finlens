@@ -1,0 +1,52 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Dockerfile.pipeline
+# FinLens — Cloud Run Job: Ingest + dbt
+#
+# Runs once per month via Cloud Scheduler.
+# Step 1: python ingest/ingest_latest.py  → loads HMDA + FRED into BigQuery raw
+# Step 2: dbt run --select marts          → builds all mart tables
+# Step 3: dbt test                        → validates mart data quality
+#
+# Build:
+#   docker build -f Dockerfile.pipeline -t finlens-pipeline .
+# Run locally (requires ADC or service-account key):
+#   docker run --env-file .env finlens-pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM python:3.11-slim
+
+# System deps (git needed by dbt for package resolution)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies first (layer cache)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# dbt needs a writable home for profiles + logs
+ENV DBT_PROFILES_DIR=/app/finlens_dbt
+ENV DBT_PROJECT_DIR=/app/finlens_dbt
+
+# Use service-account JSON key if injected via Secret Manager at runtime;
+# otherwise falls back to Application Default Credentials (Workload Identity).
+# Cloud Run automatically provides ADC via the attached service account.
+ENV GOOGLE_CLOUD_PROJECT=""
+
+# Pipeline entrypoint: ingest → dbt run → dbt test
+# Any non-zero exit code fails the Cloud Run Job and triggers retry policy.
+CMD ["bash", "-c", "\
+  set -euo pipefail && \
+  echo '=== [1/3] Ingesting HMDA + FRED data ===' && \
+  python ingest/ingest_latest.py && \
+  echo '=== [2/3] Running dbt models ===' && \
+  cd finlens_dbt && dbt run --profiles-dir . --target prod --select marts && \
+  echo '=== [3/3] Running dbt tests ===' && \
+  dbt test --profiles-dir . --target prod --select marts && \
+  echo '=== Pipeline complete ==='"]

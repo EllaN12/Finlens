@@ -1,0 +1,9 @@
+Saved outputs/synthetic_control.png
+
+Synthetic CA donor weights:
+  TX: 0.1670
+  FL: 0.1670
+  OH: 0.1670
+  NY: 0.1670
+  IL: 0.1670
+  WA: 0.1670

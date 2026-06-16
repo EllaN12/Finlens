@@ -1,0 +1,12 @@
+CA Avg Rate Pre:  4.808% | Post: 3.331%
+DiD Estimate:     -0.0180 (-1.80 pp)
+
+=================================================================
+RENTAL INVESTOR ROI
+=================================================================
+annualized_roi                                 10.3%               17.1%               18.1%
+net_cash_flow_pa                             $-7,800             $-3,953             $-5,215
+cap_rate                                        3.2%                3.2%                3.2%
+dscr                                            0.67                0.80                0.75
+adjusted_appreciation                           4.0%                4.5%                5.1%
+Saved outputs/investor_roi.png

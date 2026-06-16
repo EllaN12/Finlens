@@ -1,0 +1,95 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# cloudbuild.yaml
+# FinLens — Cloud Build CI/CD
+#
+# Triggered on push to main branch (configure in Cloud Build console).
+# Builds both images, pushes to Artifact Registry, and deploys:
+#   1. finlens-pipeline  → Cloud Run Job (updated image)
+#   2. finlens-app       → Cloud Run Service (updated image)
+#
+# Substitutions (set in Cloud Build trigger or pass via --substitutions):
+#   _REGION        : GCP region              (e.g. us-central1)
+#   _REPO          : Artifact Registry repo  (e.g. finlens)
+# ─────────────────────────────────────────────────────────────────────────────
+
+substitutions:
+  _REGION: us-central1
+  _REPO: finlens
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # ── 1. Build pipeline image ────────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    id: build-pipeline
+    args:
+      - build
+      - -f
+      - Dockerfile.pipeline
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-pipeline:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-pipeline:latest
+      - .
+
+  # ── 2. Build app image ─────────────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    id: build-app
+    args:
+      - build
+      - -f
+      - Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-app:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-app:latest
+      - .
+
+  # ── 3. Push pipeline image ─────────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    id: push-pipeline
+    waitFor: [build-pipeline]
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-pipeline
+
+  # ── 4. Push app image ──────────────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    id: push-app
+    waitFor: [build-app]
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-app
+
+  # ── 5. Update Cloud Run Job (pipeline) ────────────────────────────────────
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: deploy-pipeline-job
+    waitFor: [push-pipeline]
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - update
+      - finlens-pipeline
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-pipeline:$COMMIT_SHA
+      - --region=${_REGION}
+
+  # ── 6. Deploy Cloud Run Service (app) ─────────────────────────────────────
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: deploy-app-service
+    waitFor: [push-app]
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - finlens-app
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-app:$COMMIT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-pipeline:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/finlens-app:$COMMIT_SHA
