@@ -321,7 +321,7 @@ with st.sidebar:
     st.markdown("## 🏦 FinLens")
     try:
         _get_bq_client()
-        st.success(f"Live · BigQuery `{cfg.project}`", icon="🟢")
+        st.success("Live · BigQuery", icon="🟢")
         st.caption(f"Marts dataset: `{cfg.bq_dataset_marts}`")
     except Exception as exc:
         st.error("BigQuery connection failed.")

@@ -30,7 +30,7 @@ COPY scenarios/  scenarios/
 
 # Streamlit config — disable telemetry, set server options
 RUN mkdir -p /app/.streamlit && \
-    printf '[theme]\nbase = "dark"\n\n[server]\nport = 8080\nheadless = true\nenableCORS = false\nenableXsrfProtection = false\n\n[browser]\ngatherUsageStats = false\n' \
+    printf '[server]\nport = 8080\nheadless = true\nenableCORS = false\nenableXsrfProtection = false\n\n[browser]\ngatherUsageStats = false\n' \
     > /app/.streamlit/config.toml
 
 # Cloud Run injects PORT=8080; Streamlit reads it via --server.port
